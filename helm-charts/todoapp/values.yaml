@@ -1,9 +1,3 @@
-mysql:
-  secrets:
-    MYSQL_ROOT_PASSWORD: placeholder_root_password
-    MYSQL_USER: placeholder_mysql_user
-    MYSQL_PASSWORD: placeholder_mysql_password
-
 todoapp:
   namespace: todoapp
   image:
