@@ -130,7 +130,7 @@ jobs:
     secrets: inherit
     with:
       environment: development
-      version: '${{ github.sha }}'
+      docker-image-version: '${{ github.sha }}'
       helm-values-path: './helm-charts/todoapp/values.yaml'
 
   deploy-helm-stg:
@@ -140,5 +140,5 @@ jobs:
     secrets: inherit
     with:
       environment: staging
-      version: '${{ github.sha }}'
+      docker-image-version: '${{ github.sha }}'
       helm-values-path: './helm-charts/todoapp/values/stg.yaml'

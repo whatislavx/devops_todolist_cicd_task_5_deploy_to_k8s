@@ -8,8 +8,8 @@ on:
         description: 'Target environment for deployment'
         required: true
         type: string
-      version:
-        description: 'Helm chart version'
+      docker-image-version:
+        description: 'Docker image version to deploy'
         required: true
         type: string
       helm-values-path:
@@ -26,7 +26,7 @@ on:
 env:
   HELM_RELEASE_NAME: todoapp
   KIND_CLUSTER_NAME: todoapp-cluster
-  CHART_PKG_PATH: ./helm-charts/packages/todoapp-*.tgz
+  CHART_PKG_PATH: ./helm-charts/packages
   DOCKER_IMAGE_NAME: todoapp
 
 jobs:
@@ -54,14 +54,14 @@ jobs:
       - name: Dry-run Helm install
         run: |
           helm install --dry-run ${{ env.HELM_RELEASE_NAME }} \
-            ${{ env.CHART_PKG_PATH }}
+            ${{ env.CHART_PKG_PATH }}/todoapp-*.tgz
 
       - name: Deploy Helm Chart
         env:
           DOCKER_IMAGE_REPO: "${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}"
         run: |
           helm upgrade --install ${{ env.HELM_RELEASE_NAME }} \
-            ${{ env.CHART_PKG_PATH }} \
+            ${{ env.CHART_PKG_PATH }}/todoapp-*.tgz \
             --namespace ${{ inputs.environment }} \
             --create-namespace \
             --atomic \
@@ -76,4 +76,4 @@ jobs:
             --set mysql.mysqlRootPassword="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
             --set mysql.mysqlPassword="${{ secrets.MYSQL_PASSWORD }}" \
             --set image.repository="${{ env.DOCKER_IMAGE_REPO }}" \
-            --set image.tag="${{ inputs.version }}"
+            --set image.tag="${{ inputs.docker-image-version }}"
