@@ -46,13 +46,14 @@ jobs:
 
       - name: Deploy Helm Chart
         env:
-          DOCKER_IMAGE_NAME: "${{ secrets.DOCKER_HUB_USERNAME }}/todoapp"
+          DOCKER_IMAGE_REPO: "${{ secrets.DOCKER_HUB_USERNAME }}/todoapp"
         run: |
-          helm upgrade --install todoapp ./helm-charts/packages/todoapp-${{ inputs.version }}.tgz \
+          helm upgrade --install todoapp ./helm-charts/packages/todoapp-*.tgz \
             --namespace ${{ inputs.environment }} \
             --create-namespace \
             --atomic \
             --wait \
+            --debug \
             --timeout 300s \
             -f ${{ inputs.helm-values-path }} \
             --set secretKey="${{ secrets.SECRET_KEY }}" \
@@ -62,4 +63,5 @@ jobs:
             --set db.host="${{ secrets.DB_HOST }}" \
             --set mysql.mysqlRootPassword="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
             --set mysql.mysqlPassword="${{ secrets.MYSQL_PASSWORD }}" \
-            --set image.repository="${{ env.DOCKER_IMAGE_NAME }}"
+            --set image.repository="${{ env.DOCKER_IMAGE_REPO }}" \
+            --set image.tag="${{ inputs.version }}"
