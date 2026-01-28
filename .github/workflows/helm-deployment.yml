@@ -1,0 +1,61 @@
+name: Deploy Helm
+run-name: Deploy Helm Chart to ${{ inputs.environment }}
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Target environment for deployment'
+        required: true
+        default: 'staging'
+        type: string
+      version:
+        description: 'Helm chart version'
+        required: true
+        type: string
+      helm-values-path:
+        description: 'Path to Helm values file'
+        required: false
+        type: string
+        default: './helm-charts/todoapp/values.yaml'
+
+jobs:
+  deploy-helm:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Packaged Helm Charts
+        uses: actions/download-artifact@v4
+        with:
+          name: helm-packaged-artifacts
+          path: ./helm-charts/packages
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          config: cluster.yml
+          cluster_name: todoapp-cluster
+
+      - name: Dry-run Helm install
+        run: helm install --dry-run todoapp ./helm-charts/packages/todoapp-*.tgz
+
+      - name: Deploy Helm Chart
+        run: |
+          helm upgrade --install todoapp ./helm-charts/packages/todoapp-*.tgz \
+            --atomic \
+            --wait \
+            --timeout 3600s \
+            -f ${{ inputs.helm-values-path }} \
+            --set secretKey="${{ secrets.SECRET_KEY }}" \
+            --set db.password="${{ secrets.DB_PASSWORD }}" \
+            --set db.user="${{ secrets.DB_USER }}" \
+            --set db.name="${{ secrets.DB_NAME }}" \
+            --set db.host="${{ secrets.DB_HOST }}" \
+            --set mysql.mysqlRootPassword="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
+            --set mysql.mysqlPassword="${{ secrets.MYSQL_PASSWORD }}" \
+            --set image.repository="${{ secrets.DOCKER_HUB_USERNAME }}/todoapp"
