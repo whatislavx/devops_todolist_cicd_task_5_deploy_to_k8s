@@ -26,7 +26,7 @@ on:
 env:
   HELM_RELEASE_NAME: todoapp
   KIND_CLUSTER_NAME: todoapp-cluster
-  CHART_PKG_PATH: ./helm-charts/packages
+  CHART_PKG_PATH: ./helm-charts/packages/todoapp-*.tgz
   DOCKER_IMAGE_NAME: todoapp
 
 jobs:
@@ -54,14 +54,14 @@ jobs:
       - name: Dry-run Helm install
         run: |
           helm install --dry-run ${{ env.HELM_RELEASE_NAME }} \
-            ${{ env.CHART_PKG_PATH }}/${{ env.DOCKER_IMAGE_NAME }}-${{ inputs.version }}.tgz
+            ${{ env.CHART_PKG_PATH }}
 
       - name: Deploy Helm Chart
         env:
           DOCKER_IMAGE_REPO: "${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}"
         run: |
           helm upgrade --install ${{ env.HELM_RELEASE_NAME }} \
-            ${{ env.CHART_PKG_PATH }}/${{ env.DOCKER_IMAGE_NAME }}-${{ inputs.version }}.tgz \
+            ${{ env.CHART_PKG_PATH }} \
             --namespace ${{ inputs.environment }} \
             --create-namespace \
             --atomic \
