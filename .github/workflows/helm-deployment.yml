@@ -68,12 +68,13 @@ jobs:
             --wait \
             --timeout 300s \
             -f ${{ inputs.helm-values-path }} \
-            --set secretKey="${{ secrets.SECRET_KEY }}" \
-            --set db.password="${{ secrets.DB_PASSWORD }}" \
-            --set db.user="${{ secrets.DB_USER }}" \
-            --set db.name="${{ secrets.DB_NAME }}" \
-            --set db.host="${{ secrets.DB_HOST }}" \
-            --set mysql.mysqlRootPassword="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
-            --set mysql.mysqlPassword="${{ secrets.MYSQL_PASSWORD }}" \
-            --set image.repository="${{ env.DOCKER_IMAGE_REPO }}" \
-            --set image.tag="${{ inputs.docker-image-version }}"
+            --set todoapp.secrets.SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+            --set todoapp.secrets.DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+            --set todoapp.secrets.DB_USER="${{ secrets.DB_USER }}" \
+            --set todoapp.secrets.DB_NAME="${{ secrets.DB_NAME }}" \
+            --set todoapp.secrets.DB_HOST="${{ secrets.DB_HOST }}" \
+            --set mysql.secrets.MYSQL_ROOT_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
+            --set mysql.secrets.MYSQL_PASSWORD="${{ secrets.MYSQL_PASSWORD }}" \
+            --set mysql.secrets.MYSQL_USER="${{ secrets.DB_USER }}" \
+            --set todoapp.image.repository="${{ env.DOCKER_IMAGE_REPO }}" \
+            --set todoapp.image.tag="${{ inputs.docker-image-version }}"
