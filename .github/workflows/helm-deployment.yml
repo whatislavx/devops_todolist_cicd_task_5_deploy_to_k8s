@@ -7,7 +7,6 @@ on:
       environment:
         description: 'Target environment for deployment'
         required: true
-        default: 'staging'
         type: string
       version:
         description: 'Helm chart version'
@@ -18,6 +17,17 @@ on:
         required: false
         type: string
         default: './helm-charts/todoapp/values.yaml'
+      cluster-config-path:
+        description: 'Path to kind cluster config file'
+        required: false
+        type: string
+        default: 'cluster.yml'
+
+env:
+  HELM_RELEASE_NAME: todoapp
+  KIND_CLUSTER_NAME: todoapp-cluster
+  CHART_PKG_PATH: ./helm-charts/packages
+  DOCKER_IMAGE_NAME: todoapp
 
 jobs:
   deploy-helm:
@@ -33,27 +43,29 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: helm-packaged-artifacts
-          path: ./helm-charts/packages
+          path: ${{ env.CHART_PKG_PATH }}
 
       - name: Create kind cluster
         uses: helm/kind-action@v1.10.0
         with:
-          config: cluster.yml
-          cluster_name: todoapp-cluster
+          config: ${{ inputs.cluster-config-path }}
+          cluster_name: ${{ env.KIND_CLUSTER_NAME }}
 
       - name: Dry-run Helm install
-        run: helm install --dry-run todoapp ./helm-charts/packages/todoapp-*.tgz
+        run: |
+          helm install --dry-run ${{ env.HELM_RELEASE_NAME }} \
+            ${{ env.CHART_PKG_PATH }}/${{ env.DOCKER_IMAGE_NAME }}-${{ inputs.version }}.tgz
 
       - name: Deploy Helm Chart
         env:
-          DOCKER_IMAGE_REPO: "${{ secrets.DOCKER_HUB_USERNAME }}/todoapp"
+          DOCKER_IMAGE_REPO: "${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}"
         run: |
-          helm upgrade --install todoapp ./helm-charts/packages/todoapp-*.tgz \
+          helm upgrade --install ${{ env.HELM_RELEASE_NAME }} \
+            ${{ env.CHART_PKG_PATH }}/${{ env.DOCKER_IMAGE_NAME }}-${{ inputs.version }}.tgz \
             --namespace ${{ inputs.environment }} \
             --create-namespace \
             --atomic \
             --wait \
-            --debug \
             --timeout 300s \
             -f ${{ inputs.helm-values-path }} \
             --set secretKey="${{ secrets.SECRET_KEY }}" \

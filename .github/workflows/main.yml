@@ -135,7 +135,7 @@ jobs:
 
   deploy-helm-stg:
     name: Deploy Helm to Staging
-    needs: [helm-ci, docker-ci]
+    needs: [deploy-helm-dev]
     uses: ./.github/workflows/helm-deployment.yml
     secrets: inherit
     with:
